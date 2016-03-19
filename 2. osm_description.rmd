@@ -1,0 +1,66 @@
+---
+title: "OSM Data Description"
+author: "Grégoire Lurton"
+date: "March 18, 2016"
+output: html_document
+---
+
+First level of analysis, description of Open Street Map data we extracted for Nigeria
+
+```{r setup, include=FALSE}
+library(maptools)
+library(knitr)
+library(pander)
+library(plyr)
+
+NigeriaShp <-  readShapePoly('J://Project/phc/nga/dhis/LGAMap.shp')
+osm_data <-  readShapePoints('data/OSMDataNigeria.shp')
+```
+
+## Mapped health facilities
+
+Two sources have reported health facilities :
+1. the ehealthafrica project has mapped facilities in Kano , Bauchi and Borno
+2. the NMIS / PEPFAR project has mapped facilities in Edo Sate
+
+We first look at the distribution of these facilties :
+ 
+```{r get and clean}
+health_projects = osm_data[grepl(x = tolower(osm_data$source) , pattern = 'ehealthafrica|nmis|pepfar') , ]
+
+
+## Getting ehealthAfrica data
+ehealth_facilities <- health_projects[!is.na(health_projects$health_fac) , ]
+ehealth_facilities$addr_state <- as.character(ehealth_facilities$addr_state)
+ehealth_facilities$addr_state[is.na(ehealth_facilities$addr_state)] <- 'Borno'
+ehealth_facilities$addr_state[ehealth_facilities$addr_state == 'KN'] <- 'Kano'
+
+duplicates_ehealth <- ddply(ehealth_facilities@data , .(name , addr_state) , nrow)
+duplicates_ehealth <- subset(duplicates_ehealth , V1 > 1)
+ehealth_facilities <- ehealth_facilities[!(ehealth_facilities$name %in% duplicates_ehealth$name) ,]
+
+
+## Getting NMIS / PEPFAR data
+nmis_facilities <- health_projects[health_projects$source %in% c('NMIS','PEPFAR') , ]
+## Dropping outliers
+nmis_facilities <- nmis_facilities[as.numeric(as.character(nmis_facilities$lat)) < min(as.numeric(as.character(ehealth_facilities$lat))) ,]
+
+duplicates_nmis <- ddply(nmis_facilities@data , .(primary_na) , nrow)
+duplicates_nmis <- subset(duplicates_nmis , V1 > 1)
+nmis_facilities <- nmis_facilities[!(nmis_facilities$primary_na %in% duplicates_nmis$primary_na) ,]
+```
+
+
+```{r map facilties osm}
+plot(NigeriaShp)
+plot(ehealth_facilities , col = factor(ehealth_facilities$addr_state) , add = TRUE)
+plot(nmis_facilities , col = 'blue' , add = TRUE)
+```
+
+The distribution of facilities mapped by ehealthafrica is as follow :
+
+```{r table ehealthAfrica}
+pander(table(ehealth_facilities$addr_state , as.character(ehealth_facilities$health_fac)))
+pander(table(as.character(nmis_facilities$source)))
+```
+
