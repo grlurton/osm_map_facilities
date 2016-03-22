@@ -468,7 +468,6 @@ DiganosticElements(CompareSet2)
 DiganosticElements(CompareSet3)
 DiganosticElements(CompareSet4)
 DiganosticElements(CompareSet5)
-#### essayer de mapper plus de facilities de Kano (avec la fonction faite pour mapper)
 
 par(mfrow = c(1,1))
 plot(MatchStratC5 , col = as.factor(MatchStratC5$MatchingStage))
