@@ -71,7 +71,11 @@ img {
 <p>First level of analysis, description of Open Street Map data we extracted for Nigeria</p>
 <div id="mapped-health-facilities" class="section level2">
 <h2>Mapped health facilities</h2>
-<p>Two sources have reported health facilities : 1. the ehealthafrica project has mapped facilities in Kano , Bauchi and Borno 2. the NMIS / PEPFAR project has mapped facilities in Edo Sate</p>
+<p>Two sources have reported health facilities :</p>
+<ol style="list-style-type: decimal">
+<li><p>the ehealthafrica project has mapped facilities in Kano , Bauchi and Borno</p></li>
+<li><p>the NMIS / PEPFAR project has mapped facilities in Edo Sate</p></li>
+</ol>
 <p>We first look at the distribution of these facilties :</p>
 <pre class="r"><code>health_projects = osm_data[grepl(x = tolower(osm_data$source) , pattern = 'ehealthafrica|nmis|pepfar') , ]
 

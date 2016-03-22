@@ -20,7 +20,9 @@ osm_data <-  readShapePoints('data/OSMDataNigeria.shp')
 ## Mapped health facilities
 
 Two sources have reported health facilities :
+
 1. the ehealthafrica project has mapped facilities in Kano , Bauchi and Borno
+
 2. the NMIS / PEPFAR project has mapped facilities in Edo Sate
 
 We first look at the distribution of these facilties :
