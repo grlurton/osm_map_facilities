@@ -63,3 +63,5 @@ plot(NigeriaShp)
 plot(ValidationData , col = factor(ValidationData@data$state) , add = TRUE)
 
 writePointsShape(ValidationData, "data/ValidationSet")
+
+rm(out , doublons , facs_osm , i , LGA , lga_facilities , mm , osm_name)
