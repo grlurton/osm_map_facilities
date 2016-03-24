@@ -286,19 +286,22 @@ GetWardsConvexHull <- function(Data , WardID){
 ##Function that should get all convex hull for all wards
 
 WardsCH <- function(data){
+  i <- 1
   empty <- 'oui'
   wardsIds <- unique(data$wardID)
-  for (ID in wardsIds[-4]){
+  for (ID in wardsIds){
     print(ID)
     wards <- GetWardsConvexHull(data , ID)
-    if (!is.null(wards)){
-      print(wards@data)
-      if(empty == 'oui'){
-        out <- wards
-        empty <- 'non'
-      }
+    if (!is.null(wards) & class(wards)[1] == "SpatialPolygons"){
+      wards@polygons[[1]]@ID <- ID
+      #print(wards@data)
       if(empty == 'non'){
         out <- spRbind(out , wards)
+      }
+      if(empty == 'oui'){
+        wards
+        out <- wards
+        empty <- 'non'
       }
     }
   }
@@ -306,6 +309,7 @@ WardsCH <- function(data){
 }
 
 a <- WardsCH(MatchStratC4)
+plot(a , col = factor(a@plotOrder))
 
 GetWardsCentroid <- function(Data){
   out <- data.frame(centroidlat = numeric(), centroidlong = numeric() , 
