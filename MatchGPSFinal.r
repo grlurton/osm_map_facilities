@@ -5,8 +5,7 @@ library(ggplot2)
 library(raster)
 library(rgeos)
 
-OrgUnitsHierarchy <- read.csv('HierarchyData.csv')
-
+DhisFacilities <- read.csv('J://Project/phc/nga/dhis/HierarchyData.csv')
 #####################################
 #####Retrieve Usable OSM layer#######
 #####################################
@@ -15,8 +14,9 @@ OrgUnitsHierarchy <- read.csv('HierarchyData.csv')
 
 osm_data@data$name <- gsub('\\{|\\}' , '-' , osm_data@data$name)
 
+ValidationSet <- readShapePoints('data/ValidationSet.shp')
 
-osm_to_match <- osm_data[!(osm_data$idtoMatch %in% health_projects$idtoMatch) , ]
+osm_to_match <- osm_data[!(osm_data$idtoMatch %in% ValidationSet$idtoMatch) , ]
 
 ###Matching function
 MatchSimple <- function(DhisData , osmData){
@@ -286,19 +286,26 @@ GetWardsConvexHull <- function(Data , WardID){
 ##Function that should get all convex hull for all wards
 
 WardsCH <- function(data){
+  empty <- 'oui'
   wardsIds <- unique(data$wardID)
-  out <- GetWardsConvexHull(data , wardsIds[1])
-#  out@data$wardID <- wardsIds[1]
-  for (ID in wardsIds[-1]){
+  for (ID in wardsIds[-4]){
     print(ID)
     wards <- GetWardsConvexHull(data , ID)
-  }
-  if (!is.null(wards)){
-    out <- spRbind(out , wards)
+    if (!is.null(wards)){
+      print(wards@data)
+      if(empty == 'oui'){
+        out <- wards
+        empty <- 'non'
+      }
+      if(empty == 'non'){
+        out <- spRbind(out , wards)
+      }
+    }
   }
   out
 }
 
+a <- WardsCH(MatchStratC4)
 
 GetWardsCentroid <- function(Data){
   out <- data.frame(centroidlat = numeric(), centroidlong = numeric() , 
@@ -361,8 +368,6 @@ MatchStratC5 <- spRbind(MatchStratC4 , Match5)
 ########## Validate Matching #####################
 ##################################################
 
-ValidationSet <- readShapePoints('data/ValidationSet.shp')
-
 Validation <- function(TestedSet , ValidationSet){
   ValidData <- ValidationSet@data
   ValidData$dhis_ID <- as.character(ValidData$dhis_ID)
@@ -372,10 +377,8 @@ Validation <- function(TestedSet , ValidationSet){
                              latData = TestedSet@coords[,1],
                              longData = TestedSet@coords[,2])
   
-  print(sum(TestedCoords$facilityID %in% ValidData$dhis_ID))
   TestedCoords <- merge(TestedCoords , ValidData , by.x = 'facilityID' , by.y  = 'dhis_ID')
   
-  print('ok')
   ValidCoords <- data.frame(facilityID = ValidationSet$dhis_ID ,
                             Source = ValidationSet$source ,
                             lateHealth = ValidationSet@coords[,1],
@@ -397,22 +400,23 @@ CompareSet5 <- Validation(MatchStratC5 , ValidationSet)
 
 
 ValidationStatistics <- function(ValidationOutput){
+  n_facilities <- length(ValidationOutput$dist)
   min5 <- sum(ValidationOutput$dist <5)/length(ValidationOutput$dist)
-  meanDist <- mean(ValidationOutput$dist)
-  data.frame(min5 , meanDist) 
+  medianDist <- median(ValidationOutput$dist)
+  data.frame(n_facilities , min5 , medianDist) 
 }
 
 
 ##Should review plotting
 plotResults <- function(data , State){
-  dataPlot <- subset(data , substr(data$match , 1 ,2) == State)
-  coordinates(dataPlot) =~ long+lat
+  dataPlot <- subset(data , substr(data$state , 1 ,2) == State)
+  coordinates(dataPlot) =~ lon+lat
   plot(dataPlot)
-  plot(DHISLGA , col = "grey" , add = TRUE)
-  plot(DHISLGA[substr(DHISLGA$UnitName , 1 ,2) == State ,] , 
+  plot(NigeriaShp , col = "grey" , add = TRUE)
+  plot(NigeriaShp[substr(NigeriaShp$UnitName , 1 ,2) == State ,] , 
        col = "white" , add = TRUE)
   plot(dataPlot , add = TRUE , col = 'red')
-  dataPlot <- subset(data , substr(data$match , 1 ,2) == State)
+  dataPlot <- subset(data , substr(data$state , 1 ,2) == State)
   coordinates(dataPlot) =~ latData + longData
   plot(dataPlot, add = TRUE)
   segments(dataPlot$lateHealth , dataPlot$longeHealth ,
@@ -421,7 +425,7 @@ plotResults <- function(data , State){
 
 plotGroupped <- function(data){
   par(mfrow = c(2,4))
-  for(State in unique(substr(data$match , 1 ,2))){
+  for(State in unique(substr(data$state , 1 ,2))){
     plotResults(data , State)
   }
 }
@@ -444,10 +448,13 @@ legend('left' , legend = sort(unique(as.factor(MatchStratC5$MatchingStage))) ,
        col = 1:5 , pch = 3 ,
        cex = 0.7 , text.width = 1)
 
-WardKano <- DHISFacilities$Level3ID[DHISFacilities$Level2 == 'kn Kano State']
+WardKano <- DHISFacilities$Level4ID[DHISFacilities$Level2 == 'kn Kano State']
 
-DataToPlot <- MatchStratC5[MatchStratC5$wardID %in% WardKano & !is.na(MatchStratC5$wardID ),]
+DataToPlot <- MatchStratC5[MatchStratC5$wardID %in% WardKano  & !is.na(MatchStratC5$wardID ),]
 
 plot(DataToPlot , col = as.factor(DataToPlot$MatchingStage))
+legend('left' , legend = sort(unique(as.factor(DataToPlot$MatchingStage))) , 
+       col = 1:5 , pch = 3 ,
+       cex = 0.7 , text.width = 1)
 
 writePointsShape(MatchStratC5, "FacilitiesGPS")
