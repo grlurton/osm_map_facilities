@@ -18,6 +18,9 @@ ValidationSet <- readShapePoints('data/ValidationSet.shp')
 
 osm_to_match <- osm_data[!(osm_data$idtoMatch %in% ValidationSet$idtoMatch) , ]
 
+osm_data$source <- as.character(osm_data$source)
+osm_data$source[grep(pattern = 'ehealth' , x = tolower(osm_data$source))] <- 'ehealth'
+
 ###Matching function
 MatchSimple <- function(DhisData , osmData){
   out <- data.frame(index = character() , place = character() , 
@@ -308,7 +311,7 @@ WardsCH <- function(data){
   out
 }
 
-a <- WardsCH(MatchStratC4)
+a <- WardsCH(MatchStratC5)
 plot(a , col = factor(a@plotOrder))
 
 GetWardsCentroid <- function(Data){
@@ -428,7 +431,7 @@ plotResults <- function(data , State){
 }
 
 plotGroupped <- function(data){
-  par(mfrow = c(2,4))
+  par(mfrow = c(2,2))
   for(State in unique(substr(data$state , 1 ,2))){
     plotResults(data , State)
   }
