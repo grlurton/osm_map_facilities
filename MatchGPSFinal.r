@@ -191,12 +191,13 @@ Centroids$LGA <- ''
 coordinates(Centroids) =~ centroidlat + centroidlong
 
 
-
 ##Strategy 5 - Try to match with non point geometries
 
-##Strategy 6 - If multiple facilities have been found in a ward, attribute those in
-## the same wards to variations in the convex zone
 
+
+####################################################################################
+################ Cumulative matching using different approaches  ###################
+####################################################################################
 
 ##Step 2
 
