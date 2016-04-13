@@ -1,27 +1,7 @@
 library(maptools)
 library(plyr)
 
-DHISFacilities <- read.csv('J://Project/phc/nga/dhis/HierarchyData.csv')
-osm_data <-  readShapePoints('data/OSMDataNigeria.shp')
-##Prepare osm names to be used in the matching May be a bit more standardization here !!
-
-osm_data$source <- tolower(as.character(osm_data$source))
-osm_data$source[grep(pattern = 'ehealth' , x = osm_data$source)] <- 'ehealth'
-
-health_projects <- osm_data[grepl(x = osm_data$source , pattern = 'ehealth|nmis|pepfar') , ]
-
-health_projects@data$name <- gsub('\\{|\\}' , '-' , health_projects@data$name)
-health_projects@data$name <- gsub('Center' , 'Centre'  , health_projects@data$name)
-DHISFacilities$Level5 <- gsub('PHC' , 'Primary Health Centre' , DHISFacilities$Level5)
-DHISFacilities$Level5 <- gsub('Center' , 'Centre' , DHISFacilities$Level5)
-DHISFacilities$Level5 <- gsub('H/C' , 'Health Centre' , DHISFacilities$Level5)
-DHISFacilities$Level5 <- gsub('  ' , ' ' , DHISFacilities$Level5)
-
 ## Match the exact names of facilities
-
-
-#Modify to :
-  #2. add approximate matching / reconnaissance
 
 validation_set <- data.frame(osm_ID = character() , osm_name = character() , dhis_ID = character() , dhis_name = character(), LGA = character() , state = character()  , ward = character())
 for (LGA in NigeriaShp@data$UnitName){
@@ -43,22 +23,22 @@ for (LGA in NigeriaShp@data$UnitName){
       }
       ## Matching Name
       if (!is.na(osm_name)){ 
-        mm <- grep(osm_name, facilities , ignore.case = FALSE , value = TRUE)
+        mm <- grep(osm_name , facilities , ignore.case = TRUE , value = TRUE)
         if (length(mm) == 0){
           osm_name2 <- gsub('Clinic' , 'Centre' , osm_name)
-          mm <- grep(osm_name2, facilities , ignore.case = FALSE , value = TRUE)
+          mm <- grep(osm_name2, facilities , ignore.case = TRUE , value = TRUE)
         }
         if (length(mm) == 0){
           osm_name2 <- gsub('Centre' , 'Clinic' , osm_name)
-          mm <- grep(osm_name2, facilities , ignore.case = FALSE , value = TRUE)
+          mm <- grep(osm_name2, facilities , ignore.case = TRUE , value = TRUE)
         }
         if (length(mm) == 0){
           osm_name2 <- gsub('Health Post' , 'Dispensary' , osm_name)
-          mm <- grep(osm_name2, facilities , ignore.case = FALSE , value = TRUE)
+          mm <- grep(osm_name2, facilities , ignore.case = TRUE , value = TRUE)
         }
         if (length(mm) == 0){
           osm_name2 <- gsub('Dispensary' , 'Health Post' ,  osm_name)
-          mm <- grep(osm_name2, facilities , ignore.case = FALSE , value = TRUE)
+          mm <- grep(osm_name2, facilities , ignore.case = TRUE , value = TRUE)
         }
         
       }
@@ -75,13 +55,6 @@ for (LGA in NigeriaShp@data$UnitName){
     }
   }
 }
-
-## Pour finir 
-
-table(health_projects@data$amenity[health_projects@data$primary_na %in% validation_set_no_doublon$osm_name])
-table(health_projects@data$health_fac[health_projects@data$name %in% validation_set_no_doublon$osm_name])
-
-table(health_projects@data$health_fac[!(health_projects@data$name %in% validation_set_no_doublon$osm_name)])
 
 
 ## Taking out multi matches
