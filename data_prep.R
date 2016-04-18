@@ -56,7 +56,12 @@ correct_typos <- function(data , typos_patterns){
 
 
 DHISFacilities_typo <- correct_typos(DHISFacilities$Level5 , typos_patterns)
-health_projects_typo <- correct_typos(health_projects@data$name , typos_patterns)
+
+health_projects@data$unif_name <- as.character(health_projects@data$name)
+health_projects@data$unif_name[health_projects@data$unif_name == 'edo'] <- as.character(health_projects@data$primary_na[health_projects@data$unif_name == 'edo'])
+
+
+health_projects_typo <- correct_typos(health_projects@data$unif_name , typos_patterns)
 
 ### Normalization
 
@@ -106,6 +111,6 @@ facilities_patterns <- c('Primary Health Centre' , 'General Hospital' , 'Medical
                          'Maternity' , 'hospital'  )#Town , EN PARENTHESE
 fac_patt <- paste(facilities_patterns , collapse = '|')
 
-o <- grep(x = health_projects , pattern = fac_patt , ignore.case = TRUE , value = TRUE , invert = TRUE)
+o <- grep(x = health_projects_typo , pattern = fac_patt , ignore.case = TRUE , value = TRUE , invert = TRUE)
 
 grep(x =  DHISFacilities$Level5_typoed , 'National Program On Immunization' , value=TRUE , ignore.case = TRUE)
