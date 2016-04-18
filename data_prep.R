@@ -11,16 +11,11 @@ osm_data$source[grep(pattern = 'ehealth' , x = osm_data$source)] <- 'ehealth'
 
 health_projects <- osm_data[grepl(x = osm_data$source , pattern = 'ehealth|nmis|pepfar') , ]
 
-health_projects@data$name <- gsub('\\{|\\}' , '-' , health_projects@data$name)
-health_projects@data$name <- gsub('.' , '' , health_projects@data$name)
-health_projects@data$name <- gsub(',' , '' , health_projects@data$name)
-
-
 #### Correction of typos and others.
 
 # Adding extra space at the end of string to differentiate abbreviations 
 
-DHISFacilities$Level5 <- paste0(DHISFacilities$Level5 , ' ')
+
 
 phc <- list('Primary Health Centre' , c('PHC' , 'primary health caree' , 'Primary Centre' , 'Primary HealthCentre' , 'primary health vare centre' ,'primary healyh care' ,
                                         'Primary HealthCentre'))
@@ -41,27 +36,38 @@ med_centre <- list('Medical Centre' , c('Medical. Centre' , 'Med. Centre'))
 
 typos_patterns <- list(phc , centre , hc , dispensary , facility , mat_home , hosp_maternity , health , maternity , hospital , health_post , med_centre)
 
-DHISFacilities$Level5Typoed <- DHISFacilities$Level5
 
-for (i in seq(1,length(typos_patterns))){
-  pattern <- typos_patterns[[i]][[2]]
-  pattern <- paste(pattern , collapse = '|')
-  DHISFacilities$Level5Typoed <- gsub(pattern = pattern, typos_patterns[[i]][[1]] , DHISFacilities$Level5Typoed , ignore.case = TRUE)
+
+correct_typos <- function(data , typos_patterns){
+  var_2 <- as.character(data)
+
+  var_2 <- paste0(var_2 , ' ')
+  var_2 <- gsub('\\{|\\}' , '-' , var_2)
+  var_2 <- gsub('\\.' , '' , var_2)
+  var_2 <- gsub(',' , '' , var_2)
+
+  for (i in seq(1,length(typos_patterns))){
+    pattern <- typos_patterns[[i]][[2]]
+    pattern <- paste(pattern , collapse = '|')
+    var_2 <- gsub(pattern = pattern, typos_patterns[[i]][[1]] , var_2 , ignore.case = TRUE)
+  }
+  var_2
 }
 
 
-
+DHISFacilities_typo <- correct_typos(DHISFacilities$Level5 , typos_patterns)
+health_projects_typo <- correct_typos(health_projects@data$name , typos_patterns)
 
 ### Normalization
 
 # Taking out Extra Spaces
 
-DHISFacilities$Level5Typoed <- gsub('  ' , ' ' , DHISFacilities$Level5Typoed)
+DHISFacilities$Level5_typoed <- gsub('  ' , ' ' , DHISFacilities$Level5_typoed)
 
 # Dropping uninformative names
 drop <- c("z. " , "Unknown " , "os z ", "os. " , "os.. ","os . ","os .. ","os " , ",, ", ",. ",".. " ,"... " , "ak Unknown ","an " , "os B "  )
 
-DHISFacilities <- subset(DHISFacilities , !(Level5Typoed %in% drop))
+DHISFacilities <- subset(DHISFacilities , !(Level5_typoed %in% drop))
 
 facilities_patterns <- c('Primary Health Centre' , 'General Hospital' , 'Medical Centre' , 'Medical Clinic' , 'Health Centre' , 'Specialist Hospital' , 'Specialist Teaching Hospital' , 
                          'Health Post' , 'Nursing and Maternity Home' , 'Clinic and Maternity' , 'Dispensary' , 'Health Facility' , 
@@ -96,10 +102,10 @@ facilities_patterns <- c('Primary Health Centre' , 'General Hospital' , 'Medical
                          'Primary Health Entre' , 'Consulting Room' , 'Technical Centre' , 'Medical Consult' , ' Medical Lab\\s' , 'Medical Art Centre' , 'Medical Limited' ,'Medical' ,
                          'Convalscent Centre' , 'Millennium Developement Goal Health' , 'Infant Welfare' ,  'Outreach Centre' , 'School of Nursing' , 'Trauma Centre' , 'Paediatrics Centre' ,
                          'Children Centre' ,'X-ray Centre' , 'LGA Secretariat NPI Office' ,'Local Government Action C Aids' ,'City Council' ,
-                         'Government hospital' , 'Private Hospital' , 'Dental Maxillo-Facial Hospital' , 'Comprehensive Hospital' ,
+                         'Government hospital' , 'Private Hospital' , 'Dental Maxillo-Facial Hospital' , 'Comprehensive Hospital' , ' Primary Health ' ,
                          'Maternity' , 'hospital'  )#Town , EN PARENTHESE
 fac_patt <- paste(facilities_patterns , collapse = '|')
 
-o <- grep(x = DHISFacilities$Level5Typoed , pattern = fac_patt , ignore.case = TRUE , value = TRUE , invert = TRUE)
+o <- grep(x = health_projects , pattern = fac_patt , ignore.case = TRUE , value = TRUE , invert = TRUE)
 
-grep(x =  DHISFacilities$Level5Typoed , 'National Program On Immunization' , value=TRUE , ignore.case = TRUE)
+grep(x =  DHISFacilities$Level5_typoed , 'National Program On Immunization' , value=TRUE , ignore.case = TRUE)
