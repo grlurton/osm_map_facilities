@@ -7,20 +7,14 @@ validation_set <- data.frame(osm_ID = character() , osm_name = character() , dhi
 for (LGA in NigeriaShp@data$UnitName){
   print(LGA)
   osm_name <- mm <-  NA
-  facilities <- as.character(DHISFacilities$Level5[DHISFacilities$Level3 == LGA])
-  #facilities2 <- substr(facilities , 4  , nchar(facilities))
+  facilities <- as.character(DHISFacilities$Level5_cleaned[DHISFacilities$Level3 == LGA])
   facs_osm <- over(NigeriaShp[NigeriaShp$UnitName == LGA , ] , health_projects  , returnList = TRUE)
   lga_facilities <- health_projects[health_projects$idtoMatch %in% facs_osm[[1]]$idtoMatch , ]
   if(nrow(lga_facilities@data) > 0){
     for(i in seq(nrow(lga_facilities@data))){
       out <- data.frame(osm_ID = character() , osm_name = character() , dhis_ID = character() , dhis_name = character(), LGA = character() , state = character() , ward = character())
       ## Selecting proper variable for facility name in OSM
-      if (substr(LGA , 1 ,2) %in% c('ba' , 'bo','kn')){
-        osm_name <- lga_facilities$name[i]
-        }
-      if (substr(LGA , 1 ,2) %in% c('ed')){
-        osm_name <- lga_facilities$primary_na[i]
-      }
+      osm_name <- lga_facilities$name_cleaned[i]  
       ## Matching Name
       if (!is.na(osm_name)){ 
         mm <- grep(osm_name , facilities , ignore.case = TRUE , value = TRUE)
@@ -45,11 +39,11 @@ for (LGA in NigeriaShp@data$UnitName){
       if (length(mm) == 1  & !is.na(osm_name)){
         print(paste('     ' , mm))
         out <- data.frame(osm_ID = lga_facilities$idtoMatch[i]  , osm_name = osm_name ,
-                          dhis_ID = DHISFacilities$Level5ID[DHISFacilities$Level5 == mm] ,
+                          dhis_ID = DHISFacilities$Level5ID[DHISFacilities$Level5_cleaned == mm] ,
                           dhis_name = mm , 
-                          LGA = DHISFacilities$Level3[DHISFacilities$Level5 == mm] ,
-                          state = DHISFacilities$Level2[DHISFacilities$Level5 == mm] ,
-                          ward = DHISFacilities$Level2[DHISFacilities$Level5 == mm] )
+                          LGA = DHISFacilities$Level3[DHISFacilities$Level5_cleaned == mm] ,
+                          state = DHISFacilities$Level2[DHISFacilities$Level5_cleaned == mm] ,
+                          ward = DHISFacilities$Level2[DHISFacilities$Level5_cleaned == mm] )
       }
       validation_set <- rbind(validation_set , out)
     }

@@ -18,24 +18,67 @@ health_projects <- osm_data[grepl(x = osm_data$source , pattern = 'ehealth|nmis|
 
 
 phc <- list('Primary Health Centre' , c('PHC' , 'primary health caree' , 'Primary Centre' , 'Primary HealthCentre' , 'primary health vare centre' ,'primary healyh care' ,
-                                        'Primary HealthCentre'))
-centre <- list('Centre' , c('Center' , 'Clinjc' , 'Clininc' , 'Cljnic' , 'Cinic' , 'Clinc' , 'Centrte' , 'Cenntre' , 'Cente', 'Centre' , 'Clnic' , 'Crntre' , 'Centrre', 'Cetre' , 
-                            'Cliniepicetou','ckinic'))
+                                        'P H C', 'primary health centr\\s' , 'Primary Health Health' , 'Primary Health Cemtre' , 'Primary Health Entre'))
+centre <- list('Centre' , c('Center' ,'Centrte' , 'Cenntre' , 'Cente', 'Centre' ,  'Crntre' , 'Centrre', 'Cetre' , 'Clenter'))
+clinic <- list('Clinic' , c( 'Clinjc' , 'Clininc' , 'Cljnic' , 'Cinic' , 'Clinc' , 'Clnic'  , 'ckinic' , 'Klinic'  , 'Cliinic'))
 hc <- list('Health Centre' , c('H/C' , 'HC' ))
 dispensary <- list('Dispensary' , c('Dipsensary' , 'Dispensarry' , 'Dispnsary' , 'Dispensory' , 'Dispenary' , 'Dispesanry' , 'Dispemsary' , 'Dispensry' , 'Disppensary' , 'Dispensery' , 
-                                    'Dispensaty' , 'Hospensary' , 'Dispesary' , 'Disp\\s'))
+                                    'Dispensaty' , 'Hospensary' , 'Dispesary' , 'Disp\\s' , 'Dspensary'))
 facility <- list('Facility' , c('Facilility' , 'Facilty'))
-mat_home <- list('Maternity Home' , c('Maternity. Home' , 'Mat. Home' , 'Mathome'))
+mat_home <- list('Maternity Home' , c('Maternity Home' , 'Mat Home' , 'Mathome'))
 hosp_maternity <- list('Hospital and Maternity' , c('Hospita/Maternity'))
 health <- list('Health' , c('Heath' , 'healthl' , 'Healh' , 'Helth' , 'Heaith' , 'Heatlh' , 'Healt\\s' ,'Heallth' ,'Healtj','Haelth') )
-maternity <- list('Maternity' , c('Matenity','Materntiy'))
-hospital <- list('hospital' , c('Hopital' , 'hsoital' , 'Hosptial' , 'Hoapital' , 'Hospitak','Hosp\\s' , 'Hosipital'))
-health_post <- list('Health Post' , c('Health-Post' , 'HealthPost' , 'HP\\s' ,'Halth Post'))
-med_centre <- list('Medical Centre' , c('Medical. Centre' , 'Med. Centre'))
+maternity <- list('Maternity' , c('Matenity','Materntiy','Meternity' , 'Matternity' , 'Mayernity' , 'Matarnity'))
+hospital <- list('hospital' , c('Hopital' , 'hsoital' , 'Hosptial' , 'Hoapital' , 'Hospitak','Hosp\\s' , 'Hosipital' , 'Hospi\\s' , 'Hosptal'))
+health_post <- list('Health Post' , c('Health-Post' , 'HealthPost' , 'HP\\s' ,'Halth Post', '\\s ealth Post'))
+med_centre <- list('Medical Centre' , c('Medical Centre' , 'Med Centre','Midical Centre','Mediacl Centre',  'Medcal Centre', 'Medica Centre' ))
+tub_lep <- list('Tuberculosis and Leprosy' , c('Tuberculusis Leprosy' , 'Tuberculusisi and Leprocy' , 'Tuberculusis And Leprosy' ,'TBL', 'Tuberculosis Leprosy' ))
+mat_child_health <- list( 'Maternal and Child Health' , c('Maternity and Child Health' , 'Maternal Child Health' ,'MCH' ,'Maternal & Child Health' ,'Martanal and Chirld Health' ,
+                                                          'Maternal&Child Health'))
+conv_home <- list('Convalescence Home' , c('Convalascent Home' ,'conv home' ))
+mdg <- list('')
 
 
-typos_patterns <- list(phc , centre , hc , dispensary , facility , mat_home , hosp_maternity , health , maternity , hospital , health_post , med_centre)
+facilities_patterns <- c('Primary Health Centre' ,  'General Hospital' , 'Medical Centre', 'Medical Clinic' , 'Health Centre' , 'Specialist Hospital' , 'Specialist Teaching Hospital' , 
+                         'Nursing and Maternity Home' , 'Clinic and Maternity' , 'Dispensary' , 'Health Facility' , 'Health Post' ,
+                         ' Referral Hospital' , 'Psychiatric Hospital' , 'Nursing Centre' , 'Nursing Home' , 'Maternal and Child Health Centre' , 'Maternity Home' , 'Army Hospital' ,
+                         'Hospital and Maternity' , 'Convalescent Home' , 'Maternal and Child Health Clinic' , 'Primary Health Clinic' , 'Basic Health Clinic' , 'Primary Health Care' ,
+                         'Community Hospital' , 'Medical and Diagnostic Centre' , 'Specialist Clinic' , 'Child and Maternity Centre' , 'Health Clinic' , 'Mobile Clinic' ,
+                         'Women and Children Welfare Clinic' , 'Family Support Clinic' ,'Orphans and Less Previllage Clinic' , 'Orphan and Less Previlage Clinic' , 'Women and Child Welfare Clinic' ,
+                         'Private Clinic' , 'Orpan and Less Privelege Clinic' ,  ' Maternal Child Health clinic' , 'Outreach Unit' , 'Cottage Hospital' , 'Military Hospital' ,
+                         'Teaching Hospital' , 'Chest Hospital' , 'Eye Hospital' , 'Mission Hospital' , 'Medical Laboratory' , 'Rehabilitation Centre' ,
+                         'clinic' , 'Muslim Hospital' ,  'Maternity Centre' , 'Catholic Hospital' , 'MCHC' , 'Memorial Hospital' ,
+                          'Maternity and Child Welfare ' , 'Referal Hospital' , 
+                         'Optical Centre' , 'Tuberculosis and Leprosy Control Unit' , 'Model Hospital' , 'Optical Centre' , 'Mother And Child Hospital' , 'Medical Laboratories' ,
+                         'Mem. Hosp.' , 'Immunisation Centre'  , 'Convalscent Home' , 'Ophn And Less Previllige' , 
+                         'Health Office' , 'Mortuary Service' , 'Family Health Unit' , 'Optical Service'  , 'Modern Maternity' ,  
+                         'Maternity Child' , 'National Programe On Immunization' , 'Community Health Model' , ' General Hopital' , 'Dispensar' , 'Diagnostic Laboratory',
+                         'Conv. Home' , 'health care centre' , 'Convalescent Centre' , 'Health Community Centre' , 'Basic Health Care' , 'Dental Centre' , 'Tuberculosis and Leprosy Referral Centre' ,
+                         'M C H C'  , 'HMC' , 'Medicare Centre' ,  
+                         'Maternity And Child Wellfare Centre' , 'Health care' , 'Medical Diagonstic Centre' , 'health care' , 'Care Home' , 'Maternity and Centre' , 'Medical Services' ,
+                         'Ultrasound Diagnostic Centre' , 'Maternity and Child welfare' , 'Maternity and Child Wellfare' , 'Nursing Care Centre' , 'Radiological Services' , 'Medical Service' ,
+                         'Medical Care' , 'Medical Reception Station' , 'Diagnostics Centre' ,'Welfare Centre' , 'Medical Consultants' , 'Malaria Laboratory' , 'Dental Laboratory' ,
+                         'Maternity. Centre' , 'Model Laboratory' , 'Dental Unit' ,'Medical. Laboratory,' ,'Medical Consultancy' , 'Medical Diagnosis Laboratory' ,
+                         'Basic Health Community' , ' Health Services', 'Specialist Home', 'Materntiy Home' , 'Mat. Centre' , 'MDGs' , 'Renal Dialysis Centre' ,
+                         'Convalescent and Maternity' , 'Maternity and Dispensary' , 'Millenium Develoment Goal' , 'Unknown Ward' , 'Surgical and Medical Home' ,'Scanning Centre,' ,
+                         'Maternity House,' , 'Medical. Laboratory. Services' , 'Medical and Scan and Diagnostic Centre' , 'Health Foundation' , 'Family Support Programme Centre' ,
+                         'Millennium Development Goal' , 'Aged and Widow Centre' , 'National Paediatric Centre' , 'Medical Foundation' , 'Home Care' ,
+                         'Maternity and Home' , 'Medical Store' , 'Mutual Health Plan' , ' Model Maternity'  , 'Care and Maternity' ,
+                         'Specialist Centre' , 'Total Care' , 'Medicare' , 'Referral Centre' , 'University Health Service'  , 'comprehensive Centre' , 'Mediplex',
+                         'CSO'  , 'Health Cent re'  , 'chemist' , 'Maternal and Child Hopspital' ,
+                         'Family Support Progmme' , 'Eye Centre' , 'Urology Centre' , 'Comprehensive Health entre' , 'Eye Centre and Optic Service' ,
+                         'Support Group' , 'Infirmary', 'Laboratory' , 'Distric Health Unit' , 'NPI Unit' , #National Program on Immunization 
+                         'Epidemiology Unit' , 'Federal Model Centre' , 'Model' , 'Specialist' , 'Ward Health System' , 'ward' , 'Convalescent' , 'Foundation' , 
+                         'Consulting Room' , 'Technical Centre' , 'Medical Consult' , ' Medical Lab\\s' , 'Medical Art Centre' , 'Medical Limited' ,'Medical' ,
+                         'Convalscent Centre' , 'Millennium Developement Goal Health' , 'Infant Welfare' ,  'Outreach Centre' , 'School of Nursing' , 'Trauma Centre' , 'Paediatrics Centre' ,
+                         'Children Centre' ,'X-ray Centre' , 'LGA Secretariat NPI Office' ,'Local Government Action C Aids' ,'City Council' ,
+                         'Government hospital' , 'Private Hospital' , 'Dental Maxillo-Facial Hospital' , 'Comprehensive Hospital' , ' Primary Health ' ,
+                         'Maternity' , 'hospital' , 'leprosy' )#Town , EN PARENTHESE
 
+typos_patterns <- list(phc , centre , hc , clinic ,  dispensary , facility , mat_home , hosp_maternity , health , maternity , hospital , health_post , med_centre)
+
+drop <- c("z. " , "Unknown " , "os z ", "os. " , "os.. ","os . ","os .. ","os " , ",, ", ",. ",".. " ,"... " , "ak Unknown ",
+          "an " , "os B " ,"Xxx " , "None "  , "T ")
 
 
 correct_typos <- function(data , typos_patterns){
@@ -43,6 +86,7 @@ correct_typos <- function(data , typos_patterns){
 
   var_2 <- paste0(var_2 , ' ')
   var_2 <- gsub('\\{|\\}' , '-' , var_2)
+  var_2 <- gsub('\\(|\\)' , '-' , var_2)
   var_2 <- gsub('\\.' , '' , var_2)
   var_2 <- gsub(',' , '' , var_2)
 
@@ -55,62 +99,8 @@ correct_typos <- function(data , typos_patterns){
 }
 
 
-DHISFacilities_typo <- correct_typos(DHISFacilities$Level5 , typos_patterns)
-
 health_projects@data$unif_name <- as.character(health_projects@data$name)
 health_projects@data$unif_name[health_projects@data$unif_name == 'edo'] <- as.character(health_projects@data$primary_na[health_projects@data$unif_name == 'edo'])
 
-
-health_projects_typo <- correct_typos(health_projects@data$unif_name , typos_patterns)
-
-### Normalization
-
-# Taking out Extra Spaces
-
-DHISFacilities$Level5_typoed <- gsub('  ' , ' ' , DHISFacilities$Level5_typoed)
-
-# Dropping uninformative names
-drop <- c("z. " , "Unknown " , "os z ", "os. " , "os.. ","os . ","os .. ","os " , ",, ", ",. ",".. " ,"... " , "ak Unknown ","an " , "os B "  )
-
-DHISFacilities <- subset(DHISFacilities , !(Level5_typoed %in% drop))
-
-facilities_patterns <- c('Primary Health Centre' , 'General Hospital' , 'Medical Centre' , 'Medical Clinic' , 'Health Centre' , 'Specialist Hospital' , 'Specialist Teaching Hospital' , 
-                         'Health Post' , 'Nursing and Maternity Home' , 'Clinic and Maternity' , 'Dispensary' , 'Health Facility' , 
-                         ' Referral Hospital' , 'Psychiatric Hospital' , 'Nursing Centre' , 'Nursing Home' , 'Maternal and Child Health Centre' , 'Maternity Home' , 'Army Hospital' ,
-                         'Hospital and Maternity' , 'Convalescent Home' , 'Maternal and Child Health Clinic' , 'Primary Health Clinic' , 'Basic Health Clinic' , 'Primary Health Care' ,
-                         'Community Hospital' , 'Medical and Diagnostic Centre' , 'Specialist Clinic' , 'Child and Maternity Centre' , 'Health Clinic' , 'Mobile Clinic' ,
-                         'Women and Children Welfare Clinic' , 'Family Support Clinic' ,'Orphans and Less Previllage Clinic' , 'Orphan and Less Previlage Clinic' , 'Women and Child Welfare Clinic' ,
-                         'Private Clinic' , 'Orpan and Less Privelege Clinic' ,  ' Maternal Child Health clinic' , 'Outreach Unit' , 'Cottage Hospital' , 'Military Hospital' ,
-                         'Teaching Hospital' , 'Chest Hospital' , 'Eye Hospital' , 'Mission Hospital' , '(Specialist) Hospital' , 'Medical Laboratory' , 'Rehabilitation Centre' ,
-                         'clinic' , 'Muslim Hospital' ,  'Maternity Centre' , 'Catholic Hospital' , 'MCHC' , 'MCH' , 'Memorial Hospital' , 'Maternal Child Health ' , 
-                         'Maternal and Child Health' , 'Maternity and Child Welfare ' , 'Tuberculusis Leprosy' , 'Tuberculusisi and Leprocy' , 'Referal Hospital' , 'Tuberculusis And Leprosy' ,
-                         'Optical Centre' , 'Tuberculosis and Leprosy Control Unit' , 'Model Hospital' , 'Optical Centre' , 'Mother And Child Hospital' , 'Medical Laboratories' ,
-                         'Mem. Hosp.' , 'Immunisation Centre' , 'Primary Health Health ' , 'Convalscent Home' , 'Ophn And Less Previllige' , 'Maternity and Child Health' , 'Maternal Child Health' ,
-                         'Health Office' , 'Mortuary Service' , 'Family Health Unit' , 'Optical Service' ,'Martanal and Chirld Health' , 'Modern Maternity' , 'Maternal & Child Health' , 
-                         'Maternal&Child Health' , 'Maternity Child' , 'National Programe On Immunization' , 'Community Health Model' , ' General Hopital' , 'Dispensar' , 'Diagnostic Laboratory',
-                         'Conv. Home' , 'health care centre' , 'Convalescent Centre' , 'Health Community Centre' , 'Basic Health Care' , 'Dental Centre' , 'Tuberculosis and Leprosy Referral Centre' ,
-                         'M C H C' , 'Medical Hosptal' , 'Tuberculosis Leprosy' , 'HMC' , 'Medicare Centre' , 'Convalescence Home' , 'Tuberculosis and Leprosy' ,
-                         'Maternity And Child Wellfare Centre' , 'Health care' , 'Medical Diagonstic Centre' , 'health care' , 'Care Home' , 'Maternity and Centre' , 'Medical Services' ,
-                         'Ultrasound Diagnostic Centre' , 'Maternity and Child welfare' , 'Maternity and Child Wellfare' , 'Nursing Care Centre' , 'Radiological Services' , 'Medical Service' ,
-                         'Medical Care' , 'Medical Reception Station' , 'Diagnostics Centre' ,'Welfare Centre' , 'Medical Consultants' , 'Malaria Laboratory' , 'Dental Laboratory' ,
-                         'Maternity. Centre' , 'Model Laboratory' , 'Dental Unit' ,'Medical. Laboratory,' ,'TBL' ,'Medical Consultancy' , 'Medical Diagnosis Laboratory' ,
-                         'Basic Health Community' , ' Health Services', 'Specialist Home', 'Materntiy Home' ,'conv home' , 'Mat. Centre' , 'MDGs' , 'Renal Dialysis Centre' ,
-                         'Convalescent and Maternity' , 'Maternity and Dspensary' , 'Millenium Develoment Goal' , 'Unknown Ward' , 'Surgical and Medical Home' ,'Scanning Centre,' ,
-                         'Maternity House,' , 'Medical. Laboratory. Services' , 'Medical and Scan and Diagnostic Centre' , 'Health Foundation' , 'Family Support Programme Centre' ,
-                         'maternity house' , 'Millennium Development Goal' , 'Medica Centre' , 'Aged and Widow Centre' , 'National Paediatric Centre' , 'Medical Foundation' , 'Home Care' ,
-                         'Maternity and Home' , 'Medical Store' , 'Mutual Health Plan' , 'Cliinic' , ' Model Maternity' , 'Convalascent Home' , 'Care and Maternity' ,
-                         'Specialist Centre' , 'Total Care' , 'Medicare' , 'Referral Centre' , 'University Health Service' , 'primary health centr' , 'comprehensive Centre' , 'Mediplex',
-                         'CSO' , '\\s ealth Post' , 'Health Cent re' , 'Klinic Centre' , 'Medcal Centre' , 'chemist' , 'Primary Health Cemtre' , 'Maternal and Child Hopspital' ,
-                         'Primary HealthCentre' , 'Family Support Progmme' , 'Eye Centre' , 'Urology Centre' , 'Comprehensive Health entre' , 'Health Clenter' , 'Eye Centre and Optic Service' ,
-                         'Matarnity' , 'Support Group' , 'Infirmary', 'Laboratory' , 'Distric Health Unit' , 'NPI Unit' , #National Program on Immunization 
-                         'Epidemiology Unit' , 'Federal Model Centre' , 'Model' , 'Specialist' , 'Ward Health System' , 'ward' , 'Convalescent' , 'Foundation' , 
-                         'Primary Health Entre' , 'Consulting Room' , 'Technical Centre' , 'Medical Consult' , ' Medical Lab\\s' , 'Medical Art Centre' , 'Medical Limited' ,'Medical' ,
-                         'Convalscent Centre' , 'Millennium Developement Goal Health' , 'Infant Welfare' ,  'Outreach Centre' , 'School of Nursing' , 'Trauma Centre' , 'Paediatrics Centre' ,
-                         'Children Centre' ,'X-ray Centre' , 'LGA Secretariat NPI Office' ,'Local Government Action C Aids' ,'City Council' ,
-                         'Government hospital' , 'Private Hospital' , 'Dental Maxillo-Facial Hospital' , 'Comprehensive Hospital' , ' Primary Health ' ,
-                         'Maternity' , 'hospital'  )#Town , EN PARENTHESE
-fac_patt <- paste(facilities_patterns , collapse = '|')
-
-o <- grep(x = health_projects_typo , pattern = fac_patt , ignore.case = TRUE , value = TRUE , invert = TRUE)
-
-grep(x =  DHISFacilities$Level5_typoed , 'National Program On Immunization' , value=TRUE , ignore.case = TRUE)
+DHISFacilities$Level5_cleaned <- correct_typos(DHISFacilities$Level5 , typos_patterns)
+health_projects@data$name_cleaned <- correct_typos(health_projects@data$unif_name , typos_patterns)
