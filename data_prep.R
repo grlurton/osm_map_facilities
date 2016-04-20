@@ -3,6 +3,9 @@ library(maptools)
 library(reshape2)
 
 DHISFacilities <- read.csv('J://Project/phc/nga/dhis/HierarchyData.csv')
+
+DHISFacilities <- unique(subset(DHISFacilities , select = -c(X)))
+
 osm_data <-  readShapePoints('data/OSMDataNigeria.shp')
 ##Prepare osm names to be used in the matching May be a bit more standardization here !!
 
