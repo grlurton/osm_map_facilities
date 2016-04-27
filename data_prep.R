@@ -4,7 +4,17 @@ library(reshape2)
 
 DHISFacilities <- read.csv('J://Project/phc/nga/dhis/HierarchyData.csv')
 
-DHISFacilities <- unique(subset(DHISFacilities , select = -c(X)))
+DHISFacilities <- unique(subset(DHISFacilities , select = -c(X , toMatch , Level6ID)))
+
+uniqueID <- ddply(DHISFacilities , .(Level5ID) , nrow)
+uniqueID <- subset(uniqueID , V1 == 1)
+
+DHISFacilities <- subset(DHISFacilities , Level5ID %in% uniqueID$Level5ID )
+
+uniqueName <- ddply(DHISFacilities , .(Level5 , Level4 , Level3) , nrow)
+uniqueName <- subset(uniqueName , V1 == 1)
+
+DHISFacilities <- subset(DHISFacilities , Level5 %in% uniqueName$Level5 )
 
 osm_data <-  readShapePoints('data/OSMDataNigeria.shp')
 ##Prepare osm names to be used in the matching May be a bit more standardization here !!
@@ -107,3 +117,7 @@ health_projects@data$unif_name[health_projects@data$unif_name == 'edo'] <- as.ch
 
 DHISFacilities$Level5_cleaned <- correct_typos(DHISFacilities$Level5 , typos_patterns)
 health_projects@data$name_cleaned <- correct_typos(health_projects@data$unif_name , typos_patterns)
+
+osm_data$source <- as.character(osm_data$source)
+osm_data$source[grep(pattern = 'ehealth' , x = tolower(osm_data$source))] <- 'ehealth'
+

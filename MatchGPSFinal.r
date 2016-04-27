@@ -38,6 +38,7 @@ MatchSimple <- function(DhisData , osmData){
   if (nosm >0){
     for(i in 1:length(names)){
       match <- grep(x = facilities , pattern = names[i] , ignore.case = TRUE)
+      print(length(match))
       if (length(match) == 0){
         facilities2 <- gsub('Clinic' , 'Centre' , facilities)
         match <- grep(facilities2, names[i] , ignore.case = FALSE , value = TRUE)
@@ -54,6 +55,7 @@ MatchSimple <- function(DhisData , osmData){
         facilities2 <- gsub('Dispensary' , 'Health Post' ,  facilities)
         match <- grep(facilities2, names[i] , ignore.case = FALSE , value = TRUE)
       }
+      print(paste('       ' , length(match)))
       facility <- facilities[match]
       facilityID <- facilitiesID[match]
       ward <- wards[match]
