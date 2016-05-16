@@ -4,11 +4,11 @@ library(plyr)
 ## Match the exact names of facilities
 
 validation_set <- data.frame(osm_ID = character() , osm_name = character() , dhis_ID = character() , dhis_name = character(), LGA = character() , state = character()  , ward = character())
-for (LGA in NigeriaShp@data$UnitName){
+for (LGA in NigeriaShp$lga_name_matched){
   print(LGA)
   osm_name <- mm <-  NA
   facilities <- as.character(DHISFacilities$Level5_cleaned[DHISFacilities$Level3 == LGA])
-  facs_osm <- over(NigeriaShp[NigeriaShp$UnitName == LGA , ] , health_projects  , returnList = TRUE)
+  facs_osm <- over(NigeriaShp[NigeriaShp$lga_name_matched == LGA , ] , health_projects  , returnList = TRUE)
   lga_facilities <- health_projects[health_projects$idtoMatch %in% facs_osm[[1]]$idtoMatch , ]
   if(nrow(lga_facilities@data) > 0){
     for(i in seq(nrow(lga_facilities@data))){

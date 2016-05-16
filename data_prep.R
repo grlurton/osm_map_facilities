@@ -2,6 +2,10 @@ library(osmar)
 library(maptools)
 library(reshape2)
 
+
+osm_data$name <- gsub("\\{|\\}" , "-" , osm_data$name)
+
+
 DHISFacilities <- read.csv('J://Project/phc/nga/dhis/HierarchyData.csv')
 
 DHISFacilities <- unique(subset(DHISFacilities , select = -c(X , toMatch , Level6ID)))
@@ -128,8 +132,6 @@ osm_data$source[grep(pattern = 'ehealth' , x = tolower(osm_data$source))] <- 'eh
 
 NigeriaShp <-  readShapePoly('C://Users/grlurton/Desktop/result_zip_shp/NIGERIA_LGA.shp')
 
-
-DHISFacilities <- read.csv('J://Project/phc/nga/dhis/HierarchyData.csv')
 ###
 
 NigeriaShp$lganame <- gsub('-' , '/' , NigeriaShp$lganame)

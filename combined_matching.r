@@ -50,10 +50,10 @@ MatchSimple <- function(DhisData , osmData){
 
 MatchOver <- function(hierarch , osmDataCropped){
   MatchsCoords <- data.frame()
-  for(LGAIndex in 1:length(unique(NigeriaShp$UnitName))){
-    LGA <- unique(as.character(NigeriaShp$UnitName))[LGAIndex]
-    print(paste(LGAIndex , LGA , sep = ' - '))
-    osmWRK<- over(NigeriaShp[NigeriaShp$UnitName == LGA , ] , osmDataCropped  , returnList = TRUE)
+  for(LGAIndex in 1:length(unique(NigeriaShp$lga_name_matched))){
+    LGA <- unique(as.character(NigeriaShp$lga_name_matched))[LGAIndex]
+    #print(paste(LGAIndex , LGA , sep = ' - '))
+    osmWRK<- over(NigeriaShp[NigeriaShp$lga_name_matched == LGA , ] , osmDataCropped  , returnList = TRUE)
     osmWRK <- osmDataCropped[osmDataCropped$idtoMatch %in% osmWRK[[1]]$idtoMatch , ]
     hierarchWRK <- subset(hierarch , Level3 == LGA)
     out <- MatchSimple(hierarchWRK , osmWRK)
@@ -61,6 +61,9 @@ MatchOver <- function(hierarch , osmDataCropped){
       out$lga <- LGA
       MatchsCoords <- rbind(MatchsCoords , out)
     }
+  else{
+    print(paste(LGAIndex , LGA , sep = ' - '))
+  }
   }
   coordinates(MatchsCoords) = ~long+lat
   print(paste('Number of Matches :' , nrow(MatchsCoords) , sep = ' '))
@@ -358,7 +361,7 @@ plotResults <- function(data , State){
   coordinates(dataPlot) =~ lon+lat
   plot(dataPlot)
   plot(NigeriaShp , col = "grey" , add = TRUE)
-  plot(NigeriaShp[substr(NigeriaShp$UnitName , 1 ,2) == State ,] , 
+  plot(NigeriaShp[substr(NigeriaShp$lga_name_matched , 1 ,2) == State ,] , 
        col = "white" , add = TRUE)
   plot(dataPlot , add = TRUE , col = 'red')
   dataPlot <- subset(data , substr(data$state , 1 ,2) == State)

@@ -23,7 +23,7 @@ plot(shapefile)
 
 NigeriaShp@proj4string <- shapefile@proj4string
 
-osm_data <- shapefile[!is.na(over(shapefile , NigeriaShp)$UnitName) ,]
+osm_data <- shapefile[!is.na(over(shapefile , NigeriaShp)$lganame) ,]
 plot(osm_data)
 
 ## Reshaping a few names
