@@ -404,3 +404,5 @@ legend('left' , legend = sort(unique(as.factor(DataToPlot$MatchingStage))) ,
 table(MatchStratC5@data$MatchingStage)
 
 writePointsShape(MatchStratC5, "FacilitiesGPS")
+
+

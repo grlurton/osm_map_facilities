@@ -121,3 +121,78 @@ health_projects@data$name_cleaned <- correct_typos(health_projects@data$unif_nam
 osm_data$source <- as.character(osm_data$source)
 osm_data$source[grep(pattern = 'ehealth' , x = tolower(osm_data$source))] <- 'ehealth'
 
+
+
+
+## Names in LGA shapefile
+
+NigeriaShp <-  readShapePoly('C://Users/grlurton/Desktop/result_zip_shp/NIGERIA_LGA.shp')
+
+
+DHISFacilities <- read.csv('J://Project/phc/nga/dhis/HierarchyData.csv')
+###
+
+NigeriaShp$lganame <- gsub('-' , '/' , NigeriaShp$lganame)
+DHISFacilities$Level3 <- gsub('-' , '/' , DHISFacilities$Level3)
+
+NigeriaShp$lganame <- gsub('/' , ' ' , NigeriaShp$lganame)
+DHISFacilities$Level3 <- gsub('/' , ' ' , DHISFacilities$Level3)
+
+NigeriaShp$lganame <- gsub('  ' , ' ' , NigeriaShp$lganame)
+DHISFacilities$Level3 <- gsub('  ' , ' ' , DHISFacilities$Level3)
+
+NigeriaShp$statecode <- as.character(NigeriaShp$statecode)
+
+NigeriaShp$statecode[NigeriaShp$statecode == 'KB'] <- 'ke'
+NigeriaShp$statecode[NigeriaShp$statecode == 'JI'] <- 'jg'
+NigeriaShp$statecode[NigeriaShp$statecode == 'BR'] <- 'bo'
+
+NigeriaShp$lganame <- paste(tolower(NigeriaShp$statecode) , 
+                            NigeriaShp$lganame , 'Local Government Area' , sep = ' ')
+
+
+NigeriaShp$lganame <- gsub('Nasarawa Egon' , 'Nasarawa Eggon' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('Munya' , 'Muya' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('Iguegben' , 'Igueben' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('Ayedade' , 'Aiyedaade' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('Ayedire' , 'Aiyedire' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('Malam Maduri' , 'Malam Madori' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('Sule Tankakar' , 'Sule Tankarkar' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('Borsari' , 'Bursari' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('ke Bagudu' , 'ke Bagudo' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('za Birnin Magaji Kiyaw' , 'za Birnin Magaji' , NigeriaShp$lganame)
+NigeriaShp$lganame <- gsub('Kuban' , 'Kubau' , NigeriaShp$lganame)
+
+DHISFacilities$Level3 <- gsub('Yenagoa' , 'Yenegoa' , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub('Shongom' , 'Shomgom' , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub('Otukpo' , 'Oturkpo' , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub('Ezinihitte Mbaise' , 'Ezinihitte' , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub('Dambam' , 'Damban' , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("ek Aiyekire \\(Gbonyin\\) "  , "ek Gbonyin "  , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("Birniwa"  , "Biriniwa"  , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("Kiri Kasamma"  , "Kiri Kasama"  , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("Danbatta"  , "Dambatta"  , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("ke Arewa Local"  , "ke Arewa Dandi Local"  , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("yo Tarmuwa"  , "yo Tarmua"  , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("Danko Wasagu"  , "Wasagu Danko"  , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("Wamako"  , "Wamakko"  , DHISFacilities$Level3)
+DHISFacilities$Level3 <- gsub("fc Abuja Municipal Local Government Area"  , "fc Municipal Area Council Local Government Area"  , DHISFacilities$Level3)
+
+
+for (name in NigeriaShp$lganame){
+  
+  match <-  grep(name , DHISFacilities$Level3 , value = TRUE , ignore.case = TRUE)
+  
+  if (length(unique(match)) == 1 ){
+    NigeriaShp$lga_name_matched[NigeriaShp$lganame == name] <- unique(match)
+  }
+  else{
+    print(name)
+    print(unique(match))
+  }
+}
+
+nrow(NigeriaShp@data[is.na(NigeriaShp@data$lga_name_matched),])
+
+
+

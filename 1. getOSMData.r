@@ -3,7 +3,7 @@ library(maptools)
 library(reshape2)
 
 ## Getting Bounding Box for Nigeria
-NigeriaShp <-  readShapePoly('J://Project/phc/nga/dhis/LGAMap.shp')
+NigeriaShp <-  readShapePoly('C://Users/grlurton/Desktop/result_zip_shp/NIGERIA_LGA.shp')
 Nigeriabbox <- bbox(NigeriaShp)
 
 ## Extracting all node type Data in OSM
