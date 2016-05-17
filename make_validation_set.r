@@ -69,4 +69,4 @@ plot(ValidationData , col = factor(ValidationData@data$state) , add = TRUE)
 
 writePointsShape(ValidationData, "data/ValidationSet")
 
-rm(out , doublons , facs_osm , i , LGA , lga_facilities , mm , osm_name)
+rm(list = ls()[!(ls() %in% c('NigeriaShp' , 'osm_data' , 'DHISFacilities' , 'health_projects' , 'ValidationData'))])

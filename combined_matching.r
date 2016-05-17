@@ -8,9 +8,9 @@ library(reshape2)
 library(stringdist)
 
 ##Prepare osm names to be used in the matching
-ValidationSet <- readShapePoints('data/ValidationSet.shp')
+#ValidationData <- readShapePoints('data/ValidationData.shp')
 
-osm_to_match <- osm_data[!(osm_data$idtoMatch %in% ValidationSet$idtoMatch) , ]
+osm_to_match <- osm_data[!(osm_data$idtoMatch %in% ValidationData$idtoMatch) , ]
 
 ###Matching function
 MatchSimple <- function(DhisData , osmData){
@@ -127,37 +127,38 @@ GetCentroids <- function(data){
 ################ Cumulative matching using different approaches  ###################
 ####################################################################################
 
-NatFeatures <- 'River|Hill|Forest Reserve|Native Area|Water Works|Station|Market'
+NatFeatures <- 'Bus Stop|International School|Police Station|Filling Station|Grammar School|Comprehensive School|Comprehensive Health Center|Hills|River|Hill|Forest Reserve|Native Area|Water Works|Station|Market|Dispensary|Primary Health Centre|Health Facility|Quarters|Hospital'
 
-##Step 2
+##Step 1
 
-HierarchyStep2 <- DHISFacilities
-osmStrategyC2 <- osm_to_match
-osmStrategyC2@data$name <- paste(' ' , osmStrategyC2@data$name , ' ' , sep = '')
-osmStrategyC2@data$name <- gsub('  ' , ' ' , osmStrategyC2@data$name)
-MatchStratC2 <- MatchOver(HierarchyStep2 , osmStrategyC2)
-MatchStratC2 <- MatchStratC2[MatchStratC2$facilityID %in% 
-                               UniqueMatch(MatchStratC2@data , MatchStratC2@data$facilityID), 
+osm_to_match@data$name <- paste(' ' , osm_to_match@data$name , ' ' , sep = '')
+osm_to_match@data$name <- gsub('  ' , ' ' , osm_to_match@data$name)
+MatchStrat1 <- MatchOver(DHISFacilities , osm_to_match)
+MatchStrat1 <- MatchStrat1[MatchStrat1$facilityID %in% 
+                               UniqueMatch(MatchStrat1@data , MatchStrat1@data$facilityID), 
                              ]
-MatchStratC2@data$MatchingStage <- 'Stage 1'                           
+MatchStrat1@data$MatchingStage <- 'Stage 1'                           
+
+##Step 2 => pb : pourquoi on match beaucoup moins maintenant
+
+## Garder nom original pour decrire comment on match
+
+Hierarchy_Step2 <- subset(DHISFacilities , !(Level5ID %in% MatchStrat1$facilityID))
+osm_step2 <- osm_to_match
+osm_step2@data$name <- gsub(NatFeatures , '' , osm_step2@data$name)
+osm_step2@data$name <- paste(' ' , osm_step2@data$name , ' ' , sep = '')
+osm_step2@data$name <- gsub('  ' , ' ' , osm_step2@data$name)
+osm_step2@data$name <- gsub('  ' , ' ' , osm_step2@data$name)
+MatchStrat2 <- MatchOver(Hierarchy_Step2 , osm_step2)
+MatchStrat2 <- MatchStrat2[MatchStrat2$facilityID %in% 
+                             UniqueMatch(MatchStrat2@data , MatchStrat2@data$facilityID), 
+                             ]
+MatchStrat2@data$MatchingStage <- 'Stage 2'                           
 
 ##Step 3
 
-HierarchyStep3 <- subset(DHISFacilities , !(Level5ID %in% MatchStratC2$facilityID))
-osmStrategyC3 <- osm_to_match
-osmStrategyC3@data$name <- gsub(NatFeatures , '' , osmStrategyC3@data$name)
-osmStrategyC3@data$name <- paste(' ' , osmStrategyC3@data$name , ' ' , sep = '')
-osmStrategyC3@data$name <- gsub('  ' , ' ' , osmStrategyC3@data$name)
-MatchStratC3 <- MatchOver(HierarchyStep3 , osmStrategyC3)
-MatchStratC3 <- MatchStratC3[MatchStratC3$facilityID %in% 
-                               UniqueMatch(MatchStratC3@data , MatchStratC3@data$facilityID), 
-                             ]
-MatchStratC3@data$MatchingStage <- 'Stage 2'                           
-MatchStratC3 <- spRbind(MatchStratC3 , MatchStratC2)
-
-##Step 4
-
-HierarchyStep4 <- subset(DHISFacilities , !(Level5ID %in% MatchStratC3$facilityID))
+HierarchyStep4 <- subset(DHISFacilities , !(Level5ID %in% MatchStrat1$facilityID |
+                                              Level5ID %in% MatchStrat2$facilityID ))
 osmStrategyC4 <- osm_to_match
 osmStrategyC4@data$name <- gsub(NatFeatures , '' , osmStrategyC4@data$name)
 osmStrategyC4@data$name <- paste(' ' , osmStrategyC4@data$name , ' ' , sep = '')
@@ -185,18 +186,7 @@ colnames(Centroids@data) <- c('facilityID' , 'place' , 'facility' ,
 MatchStratC4 <- spRbind(Centroids , MatchStratC3)
 
 
-##Strategy 5 - Make approximate matching stratifying on ward
-
-
-Approximate_matching <- function( dhis_data , osm_name ){
-  
-  
-  
-}
-
-
-
-##Strategy 6 - If multiple facilities have been found in a ward, attribute those in
+##Strategy 4 - If multiple facilities have been found in a ward, attribute those in
 ## the same wards to variations in the convex zone
 
 ##Function to get the convex hull of a ward
@@ -280,6 +270,7 @@ FacilitiesToWardCentroid <- function(facilities , wardsCentroids){
   toPrint <- 0
   
   for (facilityID in levIDs){
+    facility = facilities$Level5[facilities$Level5ID == facilityID]
     wardID <- facilities$Level4ID[facilities$Level5ID == facilityID]
     if (length(wardID) == 1){
       wardsCentroids$wardID <- as.character(wardsCentroids$wardID )
@@ -317,8 +308,8 @@ MatchStratC5 <- spRbind(MatchStratC4 , Match52)
 ########## Validate Matching #####################
 ##################################################
 
-Validation <- function(TestedSet , ValidationSet){
-  ValidData <- ValidationSet@data
+Validation <- function(TestedSet , ValidationData){
+  ValidData <- ValidationData@data
   ValidData$dhis_ID <- as.character(ValidData$dhis_ID)
   TestedSet <- TestedSet[TestedSet@data$facilityID %in% ValidData$dhis_ID ,]
   
@@ -328,10 +319,10 @@ Validation <- function(TestedSet , ValidationSet){
   
   TestedCoords <- merge(TestedCoords , ValidData , by.x = 'facilityID' , by.y  = 'dhis_ID')
   
-  ValidCoords <- data.frame(facilityID = ValidationSet$dhis_ID ,
-                            Source = ValidationSet$source ,
-                            lateHealth = ValidationSet@coords[,1],
-                            longeHealth = ValidationSet@coords[,2])
+  ValidCoords <- data.frame(facilityID = ValidationData$dhis_ID ,
+                            Source = ValidationData$source ,
+                            lateHealth = ValidationData@coords[,1],
+                            longeHealth = ValidationData@coords[,2])
   
   Compare <- merge(ValidCoords , TestedCoords , by = 'facilityID') 
   dist <- pointDistance(cbind(Compare$lateHealth , Compare$longeHealth), 
@@ -341,10 +332,10 @@ Validation <- function(TestedSet , ValidationSet){
   out
 }
 
-CompareSet2 <- Validation(MatchStratC2 , ValidationSet)
-CompareSet3 <- Validation(MatchStratC3 , ValidationSet)
-CompareSet4 <- Validation(MatchStratC4 , ValidationSet)
-CompareSet5 <- Validation(MatchStratC5 , ValidationSet)
+CompareSet2 <- Validation(MatchStratC2 , ValidationData)
+CompareSet3 <- Validation(MatchStratC3 , ValidationData)
+CompareSet4 <- Validation(MatchStratC4 , ValidationData)
+CompareSet5 <- Validation(MatchStratC5 , ValidationData)
 
 
 ValidationStatistics <- function(ValidationOutput){

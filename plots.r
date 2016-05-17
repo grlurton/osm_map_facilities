@@ -9,3 +9,6 @@ legend(x = 12.5 , y = 7.3 , legend = c("Stage 1","Stage 2" , "Stage 3" , "Stage 
        pch=3,
        col=c("black","blue","green","red") , title = 'Legend' , bg= 'white') 
 title(main = 'Matching results by stage')
+
+
+plot(MatchStratC5, col = factor(MatchStratC5@data$MatchingStage) , add = TRUE )
