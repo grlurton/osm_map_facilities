@@ -77,11 +77,8 @@ UniqueMatch <- function(data , indexVar){
 }
 
 GetCentroids <- function(data){
-  Centroids <- data.frame(facility = character(), facilityID = character() ,
-                          place = character() ,
-                          centroidlat = numeric(), centroidlong = numeric() ,
-                          lat = numeric() , long = numeric() ,
-                          ward = character() , wardID = character())
+  Centroids <- data.frame()
+  
   for (place in unique(data$place)){
     MatchesforPlace <- data[data$place == place , ]
     if (nrow(MatchesforPlace@data) > 1){
@@ -93,7 +90,7 @@ GetCentroids <- function(data){
           
           if (max(t , na.rm = TRUE) < 10){
             nmatches <- nrow(MatchesforPlace@data)
-            print(max(t , na.rm = TRUE))
+
             facility <- unique(MatchesforPlace$facility[MatchesforPlace$facilityID == 
                                                           facilityID])
             ward     <- unique(MatchesforPlace$ward[MatchesforPlace$facilityID == 
@@ -101,6 +98,16 @@ GetCentroids <- function(data){
             wardID     <- unique(MatchesforPlace$wardID[MatchesforPlace$facilityID == 
                                                           facilityID])
             centroid <- gCentroid(MatchesforPlace)
+            
+            state <- unique(MatchesforPlace$state[MatchesforPlace$facilityID == 
+                                                    facilityID]) 
+            
+            lga <- unique(MatchesforPlace$lga[MatchesforPlace$facilityID == 
+                                                    facilityID]) 
+            
+            osmID <- unique(MatchesforPlace$osmID[MatchesforPlace$facilityID == 
+                                                facilityID]) 
+            
             out <- data.frame(facilityID = rep(facilityID , nmatches),
                               facility = rep(facility , nmatches) ,
                               place = rep(place , nmatches) ,
@@ -109,7 +116,10 @@ GetCentroids <- function(data){
                               lat = MatchesforPlace@coords[,1] ,
                               long = MatchesforPlace@coords[,2] ,
                               ward = rep(ward , nmatches) ,
-                              wardID = rep(wardID , nmatches)                              
+                              wardID = rep(wardID , nmatches) ,
+                              state = rep(state , nmatches) ,
+                              lga = rep(lga , nmatches) ,
+                              osmID = rep(osmID , nmatches)
             )
             Centroids <- rbind(Centroids , out)
           }
@@ -151,7 +161,10 @@ MatchStrat2 <- MatchOver(Hierarchy_Step2 , osm_to_match , "name_2")
 MatchStrat2 <- MatchStrat2[MatchStrat2$facilityID %in% 
                              UniqueMatch(MatchStrat2@data , MatchStrat2@data$facilityID), 
                              ]
-MatchStrat2@data$MatchingStage <- 'Stage 2'                           
+MatchStrat2@data$MatchingStage <- 'Stage 2'         
+
+Match_complete <- spRbind(MatchStrat2 , MatchStrat1)
+
 
 ##Step 3
 
@@ -161,26 +174,22 @@ osm_to_match@data$name_3 <- gsub(NatFeatures , '' , osm_to_match@data$name)
 osm_to_match@data$name_3 <- paste(' ' , osm_to_match@data$name_3 , ' ' , sep = '')
 osm_to_match@data$name_3 <- gsub('  ' , ' ' , osm_to_match@data$name_3)
 MatchMultip <- MatchOver(Hierarchy_Step3 , osm_to_match , 'name_3')
-MatchMultip <- MatchMultip[!(MatchMultip$facilityID %in% 
-                                 UniqueMatch(MatchMultip@data , 
-                                             MatchMultip@data$facilityID)),
-                                         ]
+
 
 ## Getting centroids for multiple matches
 Centroids <- GetCentroids(MatchMultip)
-Centroids <- subset(Centroids , select = c(facilityID , place , facility , ward , wardID ,
+Centroids <- subset(Centroids , select = c(facilityID , facility , place , ward , wardID , state , lga ,
                                            centroidlat , centroidlong))
-
-Centroids <- Centroids[!(duplicated(Centroids)) ,]
+Centroids$osmID <- 'centroid'
+Centroids <- Centroids[!duplicated(Centroids) , ]
 Centroids <- Centroids[Centroids$facilityID %in% 
                          UniqueMatch(Centroids , Centroids$facilityID) ,]
-Centroids$LGA <- ''
 coordinates(Centroids) =~ centroidlat + centroidlong
 Centroids@data$MatchingStage <- 'Stage 3'
-colnames(Centroids@data) <- c('facilityID' , 'place' , 'facility' ,
-                              'ward' , 'wardID' , 'lga' , 'MatchingStage')
 
 MatchStrat3 <- Centroids
+
+Match_complete <- spRbind(Match_complete , MatchStrat3)
 
 
 ##Strategy 4 - If multiple facilities have been found in a ward, attribute those in
@@ -188,71 +197,29 @@ MatchStrat3 <- Centroids
 
 ##Function to get the convex hull of a ward
 
-GetWardsConvexHull <- function(Data , WardID){
-  data <- Data[Data@data$wardID == WardID ,]
-  if (nrow(data@data) > 1){
-    out <- gConvexHull(data)
-    out
-  }
-}
-
-##Function that gets all convex hull for all wards
-
-WardsCH <- function(data){
-  i <- 0
-  empty <- 'oui'
-  wardsIds <- unique(data$wardID)
-  
-  n <- length(wardsIds)
-  toPrint <- 0
-  
-  for (ID in wardsIds){
-    wards <- GetWardsConvexHull(data , ID)
-    if (!is.null(wards) & class(wards)[1] == "SpatialPolygons"){
-      wards@polygons[[1]]@ID <- ID
-      if(empty == 'non'){
-        out <- spRbind(out , wards)
-      }
-      if(empty == 'oui'){
-        wards
-        out <- wards
-        empty <- 'non'
-      }
-    }
-    perc <- round(100*i/n , 0)
-    if (perc != toPrint){
-      toPrint <- perc
-      print(paste0(toPrint , "%"))
-    }
-    i <- i+1
-  }
-  out
-}
-
-#a <- WardsCH(MatchStratC5)
-#plot(a , col = factor(a@plotOrder))
-
 GetWardsCentroid <- function(Data){
-  out <- data.frame(centroidlat = numeric(), centroidlong = numeric() , 
-                    wardID = character())
+  out <- data.frame()
+  
   wardsIds <- unique(Data$wardID)
   
   for (ward in wardsIds){
     print(ward)
+    
     xx <- data.frame(wardID = ward)
     wardsCentroid <- gCentroid(Data[Data@data$wardID == ward,])
     xx$centroidlat <- wardsCentroid@coords[,1]
     xx$centroidlong <- wardsCentroid@coords[,2]
+    
     out <- rbind(out, xx)
   }
   out
 }
 
-WardsCentroids <- GetWardsCentroid(MatchStrat3)
+WardsCentroids <- GetWardsCentroid(Match_complete)
 
-Hierarchy_Step4 <- subset(DHISFacilities , !(Level5ID %in% c(MatchStrat3$facilityID,
-                                                             MatchStrat2$facilityID,
-                                                             MatchStrat1$facilityID)))
+Hierarchy_Step4 <- subset(DHISFacilities , !(Level5ID %in% c(as.character(MatchStrat3$facilityID) ,
+                                                              as.character(MatchStrat2$facilityID),
+                                                              as.character(MatchStrat1$facilityID))))
 
 ## Attention rendre les facilities uniques avant de tourner
 FacilitiesToWardCentroid <- function(facilities , wardsCentroids){
@@ -265,14 +232,17 @@ FacilitiesToWardCentroid <- function(facilities , wardsCentroids){
   toPrint <- 0
   
   for (facilityID in levIDs){
-    facility = facilities$Level5[facilities$Level5ID == facilityID]
+    facility <- facilities$Level5[facilities$Level5ID == facilityID]
     wardID <- facilities$Level4ID[facilities$Level5ID == facilityID]
+    ward <- facilities$Level4[facilities$Level5ID == facilityID]
+    state <- facilities$Level2[facilities$Level5ID == facilityID]
+    lga <- facilities$Level3[facilities$Level5ID == facilityID]
     if (length(wardID) == 1){
       wardsCentroids$wardID <- as.character(wardsCentroids$wardID )
       centroidlat <- wardsCentroids$centroidlat[wardsCentroids$wardID == wardID]
       centroidlong <- wardsCentroids$centroidlong[wardsCentroids$wardID == wardID]
       if (length(centroidlat) > 0){
-        xx <- data.frame(facility , facilityID , wardID , centroidlat , centroidlong)
+        xx <- data.frame(facility , facilityID , wardID , centroidlat , centroidlong , ward , state , lga)
         out <- rbind(out , xx)
       }
     }
@@ -289,10 +259,14 @@ FacilitiesToWardCentroid <- function(facilities , wardsCentroids){
 MatchStrat4 <- FacilitiesToWardCentroid(Hierarchy_Step4 , WardsCentroids)
 coordinates(MatchStrat4) <- ~centroidlat+ centroidlong
 
-MatchStrat4$place <- MatchStrat4$ward <- MatchStrat4$lga <- ''
+MatchStrat4$place <- MatchStrat4$osmID <- 'centroid'
 
 MatchStrat4$MatchingStage <- 'Stage 4'
-MatchStrat4@data <- subset(MatchStrat4@data , select = c("facility" , "facilityID" , "wardID","lga","ward","place","MatchingStage"))
+MatchStrat4@data <- subset(MatchStrat4@data , select = c("facility" , "facilityID" , "wardID","lga","ward","place","MatchingStage" , "state" ,
+                                                         "osmID"))
+
+
+Match_complete <- spRbind(Match_complete , MatchStrat4)
 
 ##################################################
 ########## Validate Matching #####################
@@ -322,10 +296,12 @@ Validation <- function(TestedSet , ValidationData){
   out
 }
 
-CompareSet2 <- Validation(MatchStrat1 , ValidationData)
-CompareSet3 <- Validation(MatchStrat2 , ValidationData)
-CompareSet4 <- Validation(MatchStrat3 , ValidationData)
-CompareSet5 <- Validation(Match5 , ValidationData)
+CompareSet1 <- Validation(MatchStrat1 , ValidationData)
+CompareSet2 <- Validation(MatchStrat2 , ValidationData)
+CompareSet3 <- Validation(MatchStrat3 , ValidationData)
+CompareSet4 <- Validation(MatchStrat4 , ValidationData)
+
+CompareSetComplete <- Validation(Match_complete , ValidationData)
 
 
 ValidationStatistics <- function(ValidationOutput){
@@ -337,7 +313,7 @@ ValidationStatistics <- function(ValidationOutput){
 
 
 ##Should review plotting
-plotResults <- function(data , State){
+ plotResults <- function(data , State){
   dataPlot <- subset(data , substr(data$state , 1 ,2) == State)
   coordinates(dataPlot) =~ lon+lat
   plot(dataPlot)
@@ -365,28 +341,11 @@ DiganosticElements <- function(data){
   plotGroupped(data)
 }
 
+DiganosticElements(CompareSet1)
 DiganosticElements(CompareSet2)
 DiganosticElements(CompareSet3)
 DiganosticElements(CompareSet4)
-DiganosticElements(CompareSet5)
 
-par(mfrow = c(1,1))
-plot(MatchStratC5 , col = as.factor(MatchStratC5$MatchingStage))
-legend('left' , legend = sort(unique(as.factor(MatchStratC5$MatchingStage))) , 
-       col = 1:5 , pch = 3 ,
-       cex = 0.7 , text.width = 1)
+DiganosticElements(CompareSetComplete)
 
-WardKano <- DHISFacilities$Level4ID[DHISFacilities$Level2 == 'kn Kano State']
-
-DataToPlot <- MatchStratC5[MatchStratC5$wardID %in% WardKano  & !is.na(MatchStratC5$wardID ),]
-
-plot(DataToPlot , col = as.factor(DataToPlot$MatchingStage))
-legend('left' , legend = sort(unique(as.factor(DataToPlot$MatchingStage))) , 
-       col = 1:5 , pch = 3 ,
-       cex = 0.7 , text.width = 1)
-
-table(MatchStratC5@data$MatchingStage)
-
-writePointsShape(MatchStratC5, "FacilitiesGPS")
-
-
+writePointsShape(Match_complete, "FacilitiesGPS")
