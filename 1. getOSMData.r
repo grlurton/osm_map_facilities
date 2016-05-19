@@ -16,8 +16,6 @@ response <- getURL(url)
 resp <- xmlParse(response)
 osmardata <- as_osmar(resp)
 shapefile <- as_sp(osmardata, what="points")
-par(mfrow = c(2,2))
-plot(shapefile)
 
 ##Crop to the size of Nigeria
 

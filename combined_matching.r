@@ -279,7 +279,8 @@ Validation <- function(TestedSet , ValidationData){
   
   TestedCoords <- data.frame(facilityID = TestedSet$facilityID ,
                              latData = TestedSet@coords[,1],
-                             longData = TestedSet@coords[,2])
+                             longData = TestedSet@coords[,2] ,
+                             matching_step = TestedSet$MatchingStage)
   
   TestedCoords <- merge(TestedCoords , ValidData , by.x = 'facilityID' , by.y  = 'dhis_ID')
   

@@ -75,3 +75,14 @@ plot(DataToPlot , col = as.factor(DataToPlot$MatchingStage))
 legend('left' , legend = sort(unique(as.factor(DataToPlot$MatchingStage))) , 
        col = 1:5 , pch = 3 ,
        cex = 0.7 , text.width = 1)
+
+
+
+
+
+
+qplot(data = CompareSetComplete[CompareSetComplete$dist < 30 , ] , x = dist , geom = 'density' , col =state) +
+  theme_bw()
+
+
+

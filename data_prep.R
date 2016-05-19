@@ -194,7 +194,6 @@ for (name in NigeriaShp$lganame){
   }
 }
 
-nrow(NigeriaShp@data[is.na(NigeriaShp@data$lga_name_matched),])
 
 rm(list = ls()[!(ls() %in% c('NigeriaShp' , 'osm_data' , 'DHISFacilities' , 'health_projects'))])
 
