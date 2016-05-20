@@ -47,12 +47,17 @@ for(var in colnames(CompareSetComplete)){
 pred_df <- subset(CompareSetComplete, select = keep)
 
 a <- lm(data = pred_df , log(as.numeric(dist)) ~ log(as.numeric(n_features) / as.numeric(lga_area))  + health_fac + 
-          power_supp + admin_leve + amenity + capital +  operator_t + state +
+          power_supp + admin_leve+ capital +  operator_t + state +
           matching_step )
 
 
 
 
 summary(a)
-plot(exp(predict(a)) , as.numeric(CompareSetComplete$dist))
+plot(as.numeric(CompareSetComplete$dist) , exp(predict(a)) )
 hist(exp(predict(a)) - as.numeric(CompareSetComplete$dist))
+
+plot(density(as.numeric(CompareSetComplete$dist)))
+lines(density(exp(predict(a))) , col='red' )
+
+
