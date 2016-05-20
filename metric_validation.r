@@ -31,8 +31,28 @@ ggplot(data = oo , aes(`Stage 1` , `Stage 4` , col = state)) +
 
 library(lme4)
 
-a <- lmer(data = CompareSetComplete , log(dist) ~ lga_area + as.character(matching_step) + (1|state) )
+keep = c()
+for(var in colnames(CompareSetComplete)){
+  print(var)
+  CompareSetComplete[,var] <- as.character(CompareSetComplete[,var])
+  CompareSetComplete[is.na(CompareSetComplete[var]),var] <- 'No Data'
+  print(length(unique(CompareSetComplete[,var])) )
+  if (length(unique(CompareSetComplete[,var])) >= 2){
+    keep <- c(keep , var)
+  }
+}
+  
 
 
-hist(exp(predict(a)) - CompareSetComplete$dist)
+pred_df <- subset(CompareSetComplete, select = keep)
 
+a <- lm(data = pred_df , log(as.numeric(dist)) ~ log(as.numeric(n_features) / as.numeric(lga_area))  + health_fac + 
+          power_supp + admin_leve + amenity + capital +  operator_t + state +
+          matching_step )
+
+
+
+
+summary(a)
+plot(exp(predict(a)) , as.numeric(CompareSetComplete$dist))
+hist(exp(predict(a)) - as.numeric(CompareSetComplete$dist))
