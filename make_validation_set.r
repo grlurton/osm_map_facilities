@@ -3,6 +3,8 @@ library(plyr)
 
 ## Match the exact names of facilities
 
+NigeriaShp@proj4string <- health_projects@proj4string
+
 validation_set <- data.frame(osm_ID = character() , osm_name = character() , dhis_ID = character() , dhis_name = character(), LGA = character() , state = character()  , ward = character())
 for (LGA in NigeriaShp$lga_name_matched){
   print(LGA)

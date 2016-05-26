@@ -2,6 +2,7 @@ library(osmar)
 library(maptools)
 library(reshape2)
 
+osm_data <-  readShapePoints('data/OSMDataNigeria.shp')
 
 osm_data$name <- gsub("\\{|\\}" , "-" , osm_data$name)
 
@@ -20,13 +21,13 @@ uniqueName <- subset(uniqueName , V1 == 1)
 
 DHISFacilities <- subset(DHISFacilities , Level5 %in% uniqueName$Level5 )
 
-osm_data <-  readShapePoints('data/OSMDataNigeria.shp')
+
 ##Prepare osm names to be used in the matching May be a bit more standardization here !!
 
 osm_data$source <- tolower(as.character(osm_data$source))
 osm_data$source[grep(pattern = 'ehealth' , x = osm_data$source)] <- 'ehealth'
 
-health_projects <- osm_data[grepl(x = osm_data$source , pattern = 'ehealth|nmis|pepfar') , ]
+health_projects <- osm_data[grep(x = osm_data$source , pattern = 'ehealth') , ]
 
 #### Correction of typos and others.
 

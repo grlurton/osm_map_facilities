@@ -7,7 +7,7 @@ library(rgeos)
 library(reshape2)
 
 ##Prepare osm names to be used in the matching
-#ValidationData <- readShapePoints('data/ValidationData.shp')
+ValidationData <- readShapePoints('data/ValidationSet.shp')
 
 osm_to_match <- osm_data[!(osm_data$idtoMatch %in% ValidationData$idtoMatch) & !is.na(osm_data$name), ]
 
@@ -137,7 +137,7 @@ GetCentroids <- function(data){
 ################ Cumulative matching using different approaches  ###################
 ####################################################################################
 
-NatFeatures <- 'Bus Stop|International School|Police Station|Filling Station|Grammar School|Comprehensive School|Comprehensive Health Center|Hills|River|Hill|Forest Reserve|Native Area|Water Works|Station|Market|Dispensary|Primary Health Centre|Health Facility|Quarters|Hospital'
+NatFeatures <- 'Bus Stop|International School|Police Station|Filling Station|Grammar School|Comprehensive School|Comprehensive Health Center|Hills|River|Hill|Forest Reserve|Native Area|Water Works|Station|Market|Dispensary|Primary Health Centre|Health Facility|Quarters|Hospital|Hill|Forest Reserve|Dam'
 
 ##Step 1
 
